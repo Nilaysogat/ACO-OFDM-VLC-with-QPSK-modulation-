@@ -1,0 +1,49 @@
+clear all;
+clc;
+
+%%% systtem requirements%%%%%%%%%
+N=128;  %%%%% bits
+M=4; %%modülasyon seviyesi(alfabede 2 harf var 2 harfi ifade için 1 bitlik alan yeterli)
+N_symbol=N/log2(M); %%%% bits/log2(M) -1(neden -1 var?)
+k=1;
+%%%%%calling data%%%%%
+data = randi([0 M-1],N_symbol,1);  %random data input
+
+% %%%%modulation%%%%%
+ d = pskmod(data,M,pi/4,'Gray');              %psk modulation  
+% 
+stem (d)
+title('Qpsk mod');
+pause
+%scatterplot(d);
+% %%%%% S/P Conversion %%%%%%
+ sdata=reshape(d,N_symbol,[]).';
+% 
+ d_ACO = zeros(1,2*N_symbol);
+ d_ACO(2:2:end) = sdata;
+% 
+% %%%%Hermitian transform%%%%%
+ xh=[d_ACO,0,fliplr(conj(d_ACO(2:end)))];            %flipping to EQ.1
+% 
+% %%%%Inverse FFT%%%%%
+ xh_IFFT = ifft(xh);               %inverse transform EQ.2
+
+%%%% Crop the values smaller than 0 %%%%%
+xh_IFFT(xh_IFFT<=0) = 0;
+
+%%% Plot the transmitted signal%%%%
+subplot(2,1,1);
+plot(data);
+xlabel('Time(Sec)');
+ylabel('Amplitude(Volts)');
+title(' data');
+pause
+subplot(2, 1, 2);
+plot(xh_IFFT);
+xlabel('Time(sec)');
+ylabel('amplitude');
+title(' Transformed data xh_IFFT');
+pause
+%%%%% save the signal %%%%%%
+save("ACO.txt","xh_IFFT","-ascii");
+save("data_aco_tx.txt","data","-ascii");
