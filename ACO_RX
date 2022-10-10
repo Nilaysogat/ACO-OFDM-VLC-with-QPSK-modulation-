@@ -1,0 +1,44 @@
+clc;
+clear all;
+
+%%%%%%% open the received signal file and print it %%%%%%%%%
+Text=fopen('ACO.txt','r');
+received_signal=fscanf(Text,'%f');
+fclose(Text);
+received_signal.'
+
+%%%%%% Variables %%%%%%%%%
+M=4;
+N=length(received_signal);
+N_symbol=N/log2(M);
+
+%% Recreate the signal %%%
+y_signal=received_signal - circshift(received_signal,N/2);
+
+%%% Fourier Transform %%%
+y_freq=fft(y_signal);
+
+%%% reverse the Hermitian Transform %%%
+d_ACO=y_freq(2:2:N_symbol);
+
+%%% QPSK Demodulation %%%%
+data = pskdemod(d_ACO,M,pi/4,'Gray');
+
+%%% plot %%%%
+
+subplot(2,1,1);
+plot(received_signal);
+xlabel('Time(Sec)');
+ylabel('Amplitude(Volts)');
+title('Received data');
+pause
+subplot(2, 1, 2);
+plot(data);
+xlabel('Time(sec)');
+ylabel('amplitude');
+title('data');
+pause
+
+%%%%% save the signal %%%%%%
+save("data_aco_rx.txt","data","-ascii");
+
